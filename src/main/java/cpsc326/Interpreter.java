@@ -12,28 +12,44 @@ class Interpreter implements Expr.Visitor<Object>{
 
     @Override
     public Object visitLiteralExpr(Expr.Literal expr) {
-        // todo complete function
+        return expr.value;
     }
 
     @Override
     public Object visitUnaryExpr(Expr.Unary expr) {
-        // todo complete function
+        Object right = evaluate(expr.right); // right is the value in unary (left is ! or -)
+        switch (expr.operator.type) {
+            case MINUS:
+                checkNumberOperand(expr.operator, right); // make sure number
+                return -(double) right; // we know it's number so cast object to double
+            case BANG:
+                return !isTruthy(right); // pass into isTruthy to handle object + weird cases like numbers and strings (will return true)
+        }
+        return null;
     }
 
     private void checkNumberOperand(Token operator, Object operand) {
-        // todo complete function
+        if (operand instanceof Double) return;
+        throw new RuntimeError(operator, "Operand must be a number.");
     }
 
     private void checkNumberOperands(Token operator, Object left, Object right) {
-        // todo complete function
+        // decided to just call original func for this for both operands
+        // maybe should change to have more specific error for this case but I think its fine
+        checkNumberOperand(operator, left); 
+        checkNumberOperand(operator, right);
     }
 
     private boolean isTruthy(Object object) {
-        // todo complete function
+        if (object == null) return false; // nil is false
+        if (object instanceof Boolean) return (boolean) object; // return boolean value
+        return true; // true for any other value
     }
 
     private boolean isEqual(Object left, Object right) {
-        // todo complete function
+        if (left == null && right == null) return true;
+        if (left == null) return false;
+        return left.equals(right);
     }
 
     private String stringify(Object object) {
@@ -54,7 +70,7 @@ class Interpreter implements Expr.Visitor<Object>{
 
     @Override
     public Object visitGroupingExpr(Expr.Grouping expr) {
-        // todo complete function
+        return evaluate(expr.expression);
     }
 
     private Object evaluate(Expr expr) {
@@ -63,11 +79,39 @@ class Interpreter implements Expr.Visitor<Object>{
 
     @Override
     public Object visitBinaryExpr(Expr.Binary expr) {
-        // todo complete function
+        Object left = evaluate(expr.left);
+        Object right = evaluate(expr.right);
 
         switch(expr.operator.type){
-            // todo complete function
-            
+            case PLUS:
+                // i think OurPL + is only numbers, but I think string concat could be easy to add here too
+                checkNumberOperands(expr.operator, left, right);
+                return (double) left + (double) right;
+            case MINUS:
+                checkNumberOperands(expr.operator, left, right);
+                return (double) left - (double) right;
+            case STAR:
+                checkNumberOperands(expr.operator, left, right);
+                return (double) left * (double) right;
+            case SLASH:
+                checkNumberOperands(expr.operator, left, right);
+                return (double) left / (double) right;
+            case GREATER:
+                checkNumberOperands(expr.operator, left, right);
+                return (double) left > (double) right;
+            case GREATER_EQUAL:
+                checkNumberOperands(expr.operator, left, right);
+                return (double) left >= (double) right;
+            case LESS:
+                checkNumberOperands(expr.operator, left, right);
+                return (double) left < (double) right;
+            case LESS_EQUAL:
+                checkNumberOperands(expr.operator, left, right);
+                return (double) left <= (double) right;
+            case EQUAL_EQUAL:
+                return isEqual(left, right);
+            case BANG_EQUAL:
+                return !isEqual(left, right);
         }
 
         return null;

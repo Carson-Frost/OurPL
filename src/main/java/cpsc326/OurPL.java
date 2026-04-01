@@ -58,9 +58,12 @@ public class OurPL {
         // making it run the parser
         Parser parser = new Parser(tokens);
         Expr expression = parser.parse();
-
         System.out.println("--- AST ---");
         System.out.println(new ASTPrinter().print(expression));
+
+        System.out.println("--- Result ---");
+        Interpreter interpreter = new Interpreter();
+        interpreter.interpret(expression);
     }
 
     static void error(int line, String message) {
