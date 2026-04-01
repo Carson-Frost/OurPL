@@ -50,13 +50,37 @@ public class OurPL {
         Lexer lexer = new Lexer(source);
         List<Token> tokens = lexer.scanTokens();
 
+        System.out.println("--- Tokens ---");
         for (Token token : tokens){
             System.out.println(token);
         }
+
+        // making it run the parser
+        Parser parser = new Parser(tokens);
+        Expr expression = parser.parse();
+
+        System.out.println("--- AST ---");
+        System.out.println(new ASTPrinter().print(expression));
     }
 
     static void error(int line, String message) {
         report(line, "", message);
+    }
+
+    // parser uses this to report errors with a token
+    static void error(Token token, String message) {
+        if (token.type == TokenType.EOF) {
+            report(token.line, " at end", message);
+        } else {
+            report(token.line, " at '" + token.lexeme + "'", message);
+        }
+    }
+
+    // interpreter uses this to report runtime errors
+    static boolean hadRuntimeError = false;
+    static void runtimeError(RuntimeError error) {
+        System.err.println(error.getMessage() + "\n[line " + error.token.line + "]");
+        hadRuntimeError = true;
     }
 
     private static void report(int line, String where, String message) {

@@ -22,31 +22,94 @@ class Parser {
     }
 
     private Expr expression() {
-        // TODO complete function
+        Expr expr = equality(); // figured I'd do it like this because this rule won't be so simple at some point I think??
+        return expr;
     }
 
     private Expr equality() {
-        // TODO complete function
+        // parse left side first
+        Expr left = comparison();
+
+        // loop while we see == or !=
+        while (match(BANG_EQUAL, EQUAL_EQUAL)) {
+            // we already moved past the operator because match advances
+            Token op = previous();
+            Expr right = comparison();
+            // wrap everything back into left for 1. either this or original left is returned and 2. we can keep parsing if there is another == or !=
+            left = new Expr.Binary(left, op, right);
+        }
+
+        return left;
     }
 
     private Expr comparison() {
-        // TODO complete function
+        Expr left = term();
+
+        while (match(GREATER, GREATER_EQUAL, LESS, LESS_EQUAL)) {
+            Token op = previous();
+            Expr right = term();
+            left = new Expr.Binary(left, op, right);
+        }
+
+        return left;
     }
 
     private Expr term() {
-        // TODO complete function
+        Expr left = factor();
+
+        while (match(PLUS, MINUS)) {
+            Token op = previous();
+            Expr right = factor();
+            left = new Expr.Binary(left, op, right);
+        }
+
+        return left;
     }
 
     private Expr factor() {
-        // TODO complete function
+        Expr left = unary();
+
+        while (match(SLASH, STAR)) {
+            Token op = previous();
+            Expr right = unary();
+            left = new Expr.Binary(left, op, right);
+        }
+
+        return left;
     }
 
     private Expr unary() {
-        // TODO complete function
+        if (match(BANG, MINUS)) {
+            Token op = previous();
+            Expr right = unary();
+            return new Expr.Unary(op, right);
+        } else {
+            return primary();
+        }
     }
 
     private Expr primary() {
-        // TODO complete function
+        if (match(TRUE)) {
+            return new Expr.Literal(true);
+        }
+        if (match(FALSE)) {
+            return new Expr.Literal(false);
+        }
+        if (match(NIL)) {
+            return new Expr.Literal(null);
+        }
+
+        // can do these with one check because both store value in 'literal field'
+        if (match(NUMBER, STRING)) {
+            return new Expr.Literal(previous().literal);
+        }
+
+        // grouping, if we see '(', make a new expression then consume ')'
+        if (match(LEFT_PAREN)) {
+            Expr inner = expression();
+            consume(RIGHT_PAREN, "Expect ')' after expression.");
+            return new Expr.Grouping(inner);
+        }
 
         throw error(peek(), "Expect expression.");
     }
