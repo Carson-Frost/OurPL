@@ -1,5 +1,7 @@
 # OurPL
 
+[![tests](https://github.com/Carson-Frost/OurPL/actions/workflows/tests.yml/badge.svg)](https://github.com/Carson-Frost/OurPL/actions/workflows/tests.yml)
+
 OurPL is a small programming language in Java, written for CPSC 326, Organization of Programming
 Languages, at Gonzaga. It has a hand-written lexer, a recursive-descent parser, and a tree-walking
 evaluator, and none of the three is generated from a grammar tool.
